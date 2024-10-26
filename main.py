@@ -1,10 +1,12 @@
+import os
+from colorama import Fore, init
+from datetime import datetime
+
 from pyrogram import filters, Client
-from pyrogram.filters import photo
 from pyrogram.handlers import MessageHandler
 from pyrogram.handlers.handler import Handler
 from pyrogram.types import Message, CallbackQuery
 
-from database.create import create_tables
 from bot_instance import client
 
 from config import OWNER_ID
@@ -32,11 +34,28 @@ class GetPhoto(BaseHandler):
     FILTER = filters.photo
 
     async def func(self, _, request: Message):
-        await client.save_file(path="test", file_id=int(request.photo.file_id))
+        now = datetime.now()
+
+        if not os.path.exists("@mazutta_photos"):
+            os.mkdir("@mazutta_photos")
+
+        file_name = (
+            f"@mazutta_photos/Photo("
+            f"date={now.day}/{now.month}/{now.year}/t/{now.hour}/{now.minute}/{now.second}"
+            f")"
+        )
+        await request.download(file_name=file_name)
+        await request.reply_text(text="Сохранение произведено успешно!")
+
+        await self.stop_client()
 
     @staticmethod
-    def stop_client():
-        client.stop()
+    async def stop_client():
+        print((
+                Fore.LIGHTYELLOW_EX + "[!] " +
+                Fore.LIGHTWHITE_EX + "Клиент отправлен в режим сна. Следующее пробуждение: {}"
+        ))
+        await client.stop()
 
 
 def send_notification_to_mazutta():
@@ -51,10 +70,10 @@ def add_handlers() -> None:
 
 def run_bot() -> None:
     add_handlers()
-    create_tables()
-    send_notification_to_mazutta()
+    init(autoreset=True)
     try:
         client.run()
+        send_notification_to_mazutta()
     except Exception as e:
         print(f"Невозможно запустить клиента! {e}")
 
