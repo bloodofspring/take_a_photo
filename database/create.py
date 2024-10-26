@@ -1,7 +1,7 @@
 from pyrogram.types import Message, User, Chat
 
-from database.models import *
 from database.db_init import db
+from database.models import *
 
 
 def create_tables() -> None:
@@ -26,4 +26,3 @@ class GetOrCreate:
             raise Exception("Не хватает аргументов! (Вызвано классом database/create/GetOrCreate)")
         self.user: User = request.from_user if user is None else user
         self.chat: Chat = request.chat if chat is None else chat
-

@@ -1,2 +1,1 @@
-# TheBestStructureOfTelegramBot
-базовая структура для отличного Телеграм бота
+# v i s i o n
