@@ -1,3 +1,7 @@
 from typing import Final
+from dotenv import load_dotenv
+from os import environ
 
-OWNER_ID: Final[int] = 1044385209
+load_dotenv()
+
+OWNER_ID: Final[int] = environ["owner_id"]
