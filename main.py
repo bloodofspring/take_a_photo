@@ -1,14 +1,14 @@
 import os
-from colorama import Fore, init
-from datetime import datetime
+from datetime import datetime, timedelta
+from random import randint
 
+from colorama import Fore, init
 from pyrogram import filters, Client
 from pyrogram.handlers import MessageHandler
 from pyrogram.handlers.handler import Handler
 from pyrogram.types import Message, CallbackQuery
 
-from bot_instance import client
-
+from bot_instance import pyrogram_client, telebot_client
 from config import OWNER_ID
 
 
@@ -41,39 +41,45 @@ class GetPhoto(BaseHandler):
 
         file_name = (
             f"@mazutta_photos/Photo("
-            f"date={now.day}/{now.month}/{now.year}/t/{now.hour}/{now.minute}/{now.second}"
+            f"date={now.day}_{now.month}_{now.year},"
+            f"time={now.hour}_{now.minute}_{now.second}"
             f")"
         )
         await request.download(file_name=file_name)
         await request.reply_text(text="Сохранение произведено успешно!")
 
-        await self.stop_client()
+        self.stop_client()
 
     @staticmethod
-    async def stop_client():
-        print((
-                Fore.LIGHTYELLOW_EX + "[!] " +
-                Fore.LIGHTWHITE_EX + "Клиент отправлен в режим сна. Следующее пробуждение: {}"
-        ))
-        await client.stop()
+    def stop_client():
+        exit(Fore.LIGHTWHITE_EX + f"[!] Клиент отправлен в режим сна. Следующее пробуждение: {create_new_time_point()}")
 
 
-def send_notification_to_mazutta():
-    client.send_message(chat_id=OWNER_ID, text="Take a photo!")
+def create_new_time_point():
+    # 1724 = 28 HRS 44 MINS
+    now = datetime.now()
+    until_4_44 = 1724 - (now.minute + now.hour * 60)
+    send_time = now + timedelta(minutes=randint(until_4_44, until_4_44 + 1440))
+
+    return send_time
+
+
+def send_notification_to_mazutta() -> None:
+    telebot_client.send_message(chat_id=OWNER_ID, text="Take a photo!")
 
 
 def add_handlers() -> None:
     for handler in [GetPhoto]:
-        client.add_handler(handler().de_pyrogram_handler)
+        pyrogram_client.add_handler(handler().de_pyrogram_handler)
     print("Все обработчики успешно добавлены!")
 
 
 def run_bot() -> None:
     add_handlers()
     init(autoreset=True)
+    send_notification_to_mazutta()
     try:
-        client.run()
-        send_notification_to_mazutta()
+        pyrogram_client.run()
     except Exception as e:
         print(f"Невозможно запустить клиента! {e}")
 
