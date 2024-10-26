@@ -3,3 +3,6 @@ pyaes==1.6.1
 Pyrogram==2.0.106
 PySocks==1.7.1
 python-dotenv==1.0.1
+
+peewee~=3.17.7
+pyTelegramBotAPI~=4.23.0

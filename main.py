@@ -10,6 +10,8 @@ from pyrogram.types import Message, CallbackQuery
 
 from bot_instance import pyrogram_client, telebot_client
 from config import OWNER_ID
+from database.create import create_tables
+from database.models import Photos
 
 
 class BaseHandler:
@@ -39,13 +41,12 @@ class GetPhoto(BaseHandler):
         if not os.path.exists("@mazutta_photos"):
             os.mkdir("@mazutta_photos")
 
-        file_name = (
-            f"@mazutta_photos/Photo("
-            f"date={now.day}_{now.month}_{now.year},"
-            f"time={now.hour}_{now.minute}_{now.second}"
-            f")"
-        )
+        file_name = (f"@mazutta_photos/Photo("
+                     f"date={now.day}_{now.month}_{now.year},"
+                     f"time={now.hour}_{now.minute}_{now.second}"
+                     f")")
         await request.download(file_name=file_name)
+        Photos.create(file_name=file_name)
         await request.reply_text(text="Сохранение произведено успешно!")
 
         self.stop_client()
@@ -76,6 +77,7 @@ def add_handlers() -> None:
 
 def run_bot() -> None:
     add_handlers()
+    create_tables()
     init(autoreset=True)
     send_notification_to_mazutta()
     try:
